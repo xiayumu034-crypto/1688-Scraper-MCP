@@ -22,6 +22,7 @@
 ```text
 1688_mcp/
 ├── server.py              # MCP 服务入口及抓取逻辑
+├── SKILL.md               # CoPaw 技能描述文件
 ├── requirements.txt       # Python 依赖
 ├── README.md              # 说明文档
 ├── .gitignore             # Git 忽略规则
@@ -30,33 +31,29 @@
 
 ### 🚀 安装与配置
 
-1. **环境要求**：
-   - Python 3.10 或更高版本。
-   - 安装在默认路径的 Google Chrome 浏览器。
+#### CoPaw (一键接入)
+如果你正在使用 **CoPaw**，只需对 AI 说“接入 1688mcp”或“帮我查一下 1688”。AI 会自动识别并配置该 MCP 服务。
 
-2. **克隆并安装依赖**：
-   ```bash
-   # 建议使用虚拟环境
-   python -m venv venv
-   venv\Scripts\activate
-   
-   pip install -r requirements.txt
-   ```
+AI 助手会自动完成以下配置：
+1. 在 `agent.json` 中注册 MCP 客户端。
+2. 在 `active_skills` 中激活 1688 抓取技能，确保后续所有 1688 相关请求都会强制优先使用此工具。
 
-3. **配置 MCP 客户端 (如 Claude Desktop 或 CoPaw)**：
-   在客户端配置文件中添加以下内容：
-   ```json
-   {
-     "mcpServers": {
-       "1688_Scraper_MCP": {
-         "command": "<你的路径>/1688_mcp/venv/Scripts/python.exe",
-         "args": [
-           "<你的路径>/1688_mcp/server.py"
-         ]
-       }
-     }
-   }
-   ```
+#### 通用 MCP 客户端 (如 Claude Desktop)
+在你的 MCP 配置文件中添加如下内容：
+```json
+{
+  "mcpServers": {
+    "1688_Scraper_MCP": {
+      "command": "D:/Docker/working/copaw/workspaces/default/1688_mcp/venv/Scripts/python.exe",
+      "args": [
+        "D:/Docker/working/copaw/workspaces/default/1688_mcp/server.py"
+      ],
+      "cwd": "D:/Docker/working/copaw/workspaces/default/1688_mcp"
+    }
+  }
+}
+```
+*(注意：请根据实际路径替换 command 和 args 中的路径。)*
 
 ### 🛠️ 提供的工具
 
@@ -87,50 +84,24 @@ A robust, intelligent, and anti-anti-scraping MCP (Model Context Protocol) serve
 - **Cookie Persistence**: Stores user session data locally in `drission_user_data/`, meaning you only need to log in once for long-term uninterrupted scraping.
 - **Smart DOM Parsing**: Dynamically adapts to 1688's varied and complex DOM structures (including Ant Design drawers, Shadow DOMs, and dynamically loaded pagination) to reliably extract titles, tiered prices, attributes, and paginated buyer reviews.
 
-### 📦 File Structure
-
-```text
-1688_mcp/
-├── server.py              # Main MCP server entry point and scraping logic
-├── requirements.txt       # Python dependencies
-├── README.md              # Documentation
-├── .gitignore             # Git ignore rules
-└── drission_user_data/    # (Auto-generated) Local browser session and cookie storage
-```
-
 ### 🚀 Installation & Setup
 
-1. **Prerequisites**: 
-   - Python 3.10 or higher.
-   - Google Chrome installed in its default location.
+#### CoPaw (One-Click Setup)
+If you are using **CoPaw**, simply ask the agent to "activate 1688mcp" or "help me with 1688". The AI will automatically configure itself to use this MCP server and prioritize it for all 1688-related tasks.
 
-2. **Clone and Install Dependencies**:
-   ```bash
-   # It is recommended to use a virtual environment
-   python -m venv venv
-   source venv/bin/activate  # On Windows use: venv\Scripts\activate
-   
-   pip install -r requirements.txt
-   ```
-
-3. **Configure MCP Client (e.g., Claude Desktop or CoPaw)**:
-   Add the following configuration to your MCP client's config file:
-   ```json
-   {
-     "mcpServers": {
-       "1688_Scraper_MCP": {
-         "command": "<YOUR_PATH>/1688_mcp/venv/Scripts/python.exe",
-         "args": [
-           "<YOUR_PATH>/1688_mcp/server.py"
-         ]
-       }
-     }
-   }
-   ```
-
-### 🛠️ Provided Tools
-
-1. `get_1688_product_base_info(url: str)`: Extracts product title, tiered pricing, and attributes.
-2. `get_1688_product_reviews(url: str)`: Handles pagination and extracts up to 20 recent buyer reviews from drawers.
-3. `update_auth_cookie(url: str)`: Opens a 60s window for manual captcha/login resolution.
-4. `analyze_product_competitiveness(url: str)`: A macro-tool for comprehensive product analysis.
+#### Generic MCP Client (e.g., Claude Desktop)
+Add the following configuration to your MCP client's config file:
+```json
+{
+  "mcpServers": {
+    "1688_Scraper_MCP": {
+      "command": "D:/Docker/working/copaw/workspaces/default/1688_mcp/venv/Scripts/python.exe",
+      "args": [
+        "D:/Docker/working/copaw/workspaces/default/1688_mcp/server.py"
+      ],
+      "cwd": "D:/Docker/working/copaw/workspaces/default/1688_mcp"
+    }
+  }
+}
+```
+*(Note: Replace paths with your actual absolute paths.)*
