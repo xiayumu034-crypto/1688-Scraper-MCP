@@ -22,4 +22,5 @@
 - `search_1688_products(keyword, page_num)`: 搜索商品列表，返回带有公司标签、成交额、工厂认证等详细元数据的结构化结果。
 - `get_product_detail_and_price(url)`: 获取详情页的**阶梯价格表**、起批门槛及物流快递信息。
 - `analyze_supplier_reliability(url)`: 抓取右侧边栏及工商档案，获取回头率、发货速度、超级工厂资质等深度背调数据。
+- `get_product_reviews(url, max_count)`: 获取商品评价（支持自动点击下一页进行翻页抓取）。默认最多拉取 100 条防封号，如果用户要求拉取所有，可以将 `max_count` 设置得非常大（如 1000）。
 - `update_auth_cookie(url)`: 唤起真实浏览器窗口供用户手动过风控/扫码登录（60秒）。

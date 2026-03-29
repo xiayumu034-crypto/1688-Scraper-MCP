@@ -280,5 +280,83 @@ def analyze_supplier_reliability(url: str) -> str:
     except Exception as e:
         return f"深度背调失败: {str(e)}"
 
+@mcp.tool()
+def get_product_reviews(url: str, max_count: int = 100) -> str:
+    """
+    核心功能 4：深度评价提取（支持自动翻页）。
+    拉取商品的买家真实评价，大模型可依此判断商品的真实质量、色差、物流速度。
+    默认拉取最多 100 条（自动翻 5 页）。支持通过修改 max_count 拉取更多。
+    注意：不建议设置极大数值（如 10000），否则易触发 1688 反爬机制。
+    
+    参数:
+        url (str): 1688商品详情页链接。
+        max_count (int): 最多拉取的评价条数。
+    """
+    page = get_browser()
+    page.get(url)
+    page.wait.load_start()
+    time.sleep(3)
+
+    if check_security_block(page):
+        return "ERROR_AUTH_REQUIRED: 触发了安全验证或需要登录。"
+
+    reviews = []
+    try:
+        # 尝试点击“评价”Tab
+        # 1688的评价Tab通常包含“评价”或“买家评价”
+        review_tab = page.ele('x://*[contains(@class, "tab") and (contains(text(), "评价") or contains(text(), "评论"))]', timeout=3)
+        if review_tab:
+            review_tab.click()
+            time.sleep(2)
+        else:
+            # 有的页面评价直接在下方
+            page.scroll.to_half()
+            time.sleep(1)
+
+        while len(reviews) < max_count:
+            # 抓取当前页评价项
+            items = page.eles('.review-item') or page.eles('x://*[contains(@class, "remark-item")]') or page.eles('x://*[contains(@class, "comment-item")]')
+            
+            if not items:
+                break # 没找到评价列表
+
+            current_page_reviews = 0
+            for item in items:
+                if len(reviews) >= max_count:
+                    break
+                
+                content_ele = item.ele('.review-content', timeout=0.5) or item.ele('x://*[contains(@class, "content")]', timeout=0.5)
+                date_ele = item.ele('.review-date', timeout=0.5) or item.ele('x://*[contains(@class, "date")]', timeout=0.5)
+                sku_ele = item.ele('.review-sku', timeout=0.5) or item.ele('x://*[contains(@class, "sku")]', timeout=0.5)
+
+                review_data = {
+                    "content": content_ele.text if content_ele else "默认好评",
+                    "date": date_ele.text if date_ele else "",
+                    "sku": sku_ele.text if sku_ele else ""
+                }
+                reviews.append(review_data)
+                current_page_reviews += 1
+
+            if current_page_reviews == 0:
+                break # 当前页没解析出东西，防止死循环
+
+            if len(reviews) >= max_count:
+                break
+
+            # 找下一页按钮
+            next_btn = page.ele('x://*[contains(@class, "next") and not(contains(@class, "disabled"))]', timeout=1) or \
+                       page.ele('x://a[contains(text(), "下一页") and not(contains(@class, "disable"))]', timeout=1)
+            
+            if next_btn and next_btn.is_clickable():
+                next_btn.click()
+                time.sleep(2) # 强延时防封
+            else:
+                break # 没有下一页了
+
+        return json.dumps({"count": len(reviews), "reviews": reviews}, ensure_ascii=False, indent=2)
+
+    except Exception as e:
+        return f"获取评价失败: {str(e)}"
+
 if __name__ == "__main__":
     mcp.run()
