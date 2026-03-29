@@ -1,25 +1,25 @@
-# Skill: 1688 Scraper (1688mcp)
+# Skill: 1688 神级采购助理 (1688mcp)
 
-This skill allows the agent to interact with 1688.com to extract product information, pricing, and reviews. It uses a headed browser to bypass anti-scraping measures.
+这个 Skill 使智能体能够扮演一个专业的“1688 采购专家”，帮助 B 端商家和 C 端买家绕过贸易“倒爷”，寻找真实源头工厂，精确解析阶梯价格、起批量、发货物流及退货率等核心数据。
 
-## Triggers
+## Triggers (触发条件)
 
-- Any mention of "1688", "alibaba.cn", "1688.com".
-- Requests to "get product info from 1688".
-- Requests to "scrape 1688".
-- Requests to "analyze 1688 products".
-- Pasting a 1688.com URL.
+- 用户询问：“帮我在 1688 找一下广东的源头工厂”、“找一下挂脖风扇的同款厂家”。
+- 用户询问：“这件商品能不能只买一件？”、“买 500 件单件成本是多少？”
+- 用户粘贴 1688.com 商品链接，并要求：“帮我背调一下这个工厂是不是真的”、“这件商品实际拿货价多少钱”。
+- 提到“1688找货”、“源头代发”、“牛头标超级工厂”等采购专业词汇。
 
-## Guidelines
+## Guidelines (使用准则)
 
-1. **Prioritize 1688mcp**: Whenever a 1688-related task is requested, you **MUST** use the tools provided by the `1688_mcp` server instead of generic browser tools.
-2. **Handle Auth Gracefully**: If a tool returns `ERROR_AUTH_REQUIRED`, immediately call `update_auth_cookie` and inform the user that a browser window has opened for them to solve a captcha or log in. Wait for them to confirm before retrying.
-3. **Session Persistence**: The MCP server handles sessions via `drission_user_data`. Do not worry about cookies unless auth is explicitly required.
-4. **Data Extraction**: Use `get_1688_product_base_info` for general details and `get_1688_product_reviews` for buyer feedback.
+1. **懂行（专业话术）**：以专业买手的身份回应，向用户强调“阶梯拿货价”、“起批量”、“是否支持一件代发”、“货源地（如广东电子、义乌小商品）”、“复购率与退换货率”。
+2. **过滤机制 (Smart Filter)**：当用户通过 `search_1688_products` 搜索时，你会拿到 20 个结果的原始 JSON 列表。你必须**主动**帮用户筛选：剔除没有“生产厂家”/“牛头标”标签的经销倒爷，找出满足用户条件（如发货地、成交额、成立年份）的最优商家。
+3. **阶梯算价 (Precise Pricing)**：当用户询问具体商品价格时，使用 `get_product_detail_and_price`，并根据用户的采购件数（如 1件、100件、500件）计算真实的单件价格，并留意是否包含快递费。
+4. **防坑背调 (Supplier Vetting)**：购买前主动建议或直接调用 `analyze_supplier_reliability`，查看诚信通年限、发货速度、回头率。告诉用户：“这家店虽然便宜，但退换货率高于同行，请谨慎”或“这是一家 10 年诚信通的牛头标超级工厂，货源很稳”。
+5. **处理风控 (Handle Auth Gracefully)**：1688 风控极严。如果工具返回 `ERROR_AUTH_REQUIRED`，立即调用 `update_auth_cookie` 并告诉用户：“1688 弹出滑块验证码了，我已为你打开浏览器窗口，请在 60 秒内手动划一下，好了告诉我！”
 
 ## Tools (via MCP)
 
-- `get_1688_product_base_info(url)`: Get title, price, and attributes.
-- `get_1688_product_reviews(url)`: Get latest reviews.
-- `update_auth_cookie(url)`: Manual intervention for login/captcha.
-- `analyze_product_competitiveness(url)`: Comprehensive analysis.
+- `search_1688_products(keyword, page_num)`: 搜索商品列表，返回带有公司标签、成交额、工厂认证等详细元数据的结构化结果。
+- `get_product_detail_and_price(url)`: 获取详情页的**阶梯价格表**、起批门槛及物流快递信息。
+- `analyze_supplier_reliability(url)`: 抓取右侧边栏及工商档案，获取回头率、发货速度、超级工厂资质等深度背调数据。
+- `update_auth_cookie(url)`: 唤起真实浏览器窗口供用户手动过风控/扫码登录（60秒）。

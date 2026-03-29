@@ -1,107 +1,55 @@
-# 1688 Scraper MCP 服务
+# 1688 神级采购助理 MCP (1688 Scraper MCP)
 
-[中文](#chinese) | [English](#english)
+> 这个 MCP 工具将你的 AI 变成一个精通内行的“1688 批发采购专家”。无论是 B 端批发、跨境电商找货，还是 C 端个人买家找平替，它都能帮你绕过贸易倒爷，直达源头工厂。
 
----
+## 🌟 核心能力 (Core Features)
 
-<a name="chinese"></a>
+### 1. 智能搜货与“真假工厂”过滤 (`search_1688_products`)
+1688 上有很多“二道贩子”（贸易商）。这个工具在搜索时，不仅抓取标题和价格，还会抓取：
+- **公司名称**与**发货地**（例如：买电子产品找深圳/东莞，买小商品找义乌）。
+- **工厂标签**（如：“生产厂家”、“牛头标”、“超级工厂”）。
+- **诚信通年限**与**近30天成交额**。
+- **AI 赋能玩法**：你可以直接对 AI 说：“帮我搜‘挂脖小风扇’，只要广东东莞的货源，剔除经销批发商，只看成立 5 年以上的生产厂家。”
 
-## 中文 (Chinese)
+### 2. 精准阶梯算价与物流解析 (`get_product_detail_and_price`)
+1688 的价格显示非常具有欺骗性（经常拿缺货配件标低价引流）。
+- **真实 SKU 价格**：精准解析阶梯价格表（如：2-99件 10元，100-499件 9元，≥500件 8元）。
+- **起批量与代发**：明确最低起批门槛。
+- **快递物流费**：抓取隐藏的运费成本。
+- **AI 赋能玩法**：你可以直接把链接发给 AI 并问：“如果我买 200 件，算上运费，单件到杭州的成本是多少？”
 
-一个强健、智能且具备反爬绕过能力的 MCP (Model Context Protocol) 服务，专为 1688.com 交互设计。基于 `DrissionPage` 和 `FastMCP` 构建，它允许 Claude 等大语言模型无缝提取 1688 的商品元数据、价格和买家评价，并优雅地处理复杂的登录墙和滑块验证码。
+### 3. 供应商深度防坑背调 (`analyze_supplier_reliability`)
+买货最怕被坑、发货慢、品控差。这个工具专门提取 1688 右侧边栏的店铺核心履约指标 (BSR)：
+- **工厂资质**：牛头标超级工厂、实力商家。
+- **履约数据**：发货速度、响应速度、货描相符评分。
+- **复购率/回头率**：判断商品质量的最核心指标。
+- **AI 赋能玩法**：发两个链接给 AI：“帮我对比一下这两个厂家，哪个更适合做长期稳定的跨境供应商？谁的退换货率更低？”
 
-### ✨ 核心特性
+### 4. 智能过风控 (`update_auth_cookie`)
+1688 拥有变态级的反爬虫机制。本工具基于 `DrissionPage` 驱动真实的 Chromium 浏览器，采用本地 `user_data` 持久化方案。
+- 当触发滑块或登录拦截时，工具会自动唤起一个真实浏览器窗口，给你 60 秒时间手动滑动验证码或扫码登录，登录状态将永久保存在本地供后续静默抓取使用。
 
-- **反爬虫绕过**：采用有头浏览器模式（通过 `DrissionPage`）而非易被检测的无头模式，大幅降低触发 1688 严格反爬机制的概率。
-- **交互式身份验证**：当遇到滑块验证或登录墙时，MCP 会向大模型发送 `ERROR_AUTH_REQUIRED` 信号，触发 60 秒的交互窗口，供用户手动扫码或滑块。
-- **Cookie 持久化**：将用户会话数据保存在本地 `drission_user_data/`，实现“一次登录，长期抓取”。
-- **智能 DOM 解析**：动态适配 1688 复杂多变的 DOM 结构（包括 Ant Design 侧边抽屉、Shadow DOM 以及动态加载的分页），可靠提取标题、阶梯价、属性和分页评价。
+## 🚀 安装与运行
 
-### 📦 文件结构
+### 环境准备
+1. 确保安装了 Python 3.10+。
+2. 安装依赖：
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```text
-1688_mcp/
-├── server.py              # MCP 服务入口及抓取逻辑
-├── SKILL.md               # CoPaw 技能描述文件
-├── requirements.txt       # Python 依赖
-├── README.md              # 说明文档
-├── .gitignore             # Git 忽略规则
-└── drission_user_data/    # (自动生成) 本地浏览器会话及 Cookie 存储
+### 运行 MCP 服务器
+你可以通过 `FastMCP` CLI 或者直接运行 `server.py`：
+```bash
+python server.py
 ```
+*(或者配置到你的 AI IDE (如 Cursor / Windsurf / Antigravity) 的 `mcp.json` 中，命令设置为 `python`, 参数为 `server.py` 的绝对路径。)*
 
-### 🚀 安装与配置
+## 💬 交互示例 (Prompts to try)
 
-#### CoPaw (一键接入)
-如果你正在使用 **CoPaw**，只需对 AI 说“接入 1688mcp”或“帮我查一下 1688”。AI 会自动识别并配置该 MCP 服务。
+配置好本 MCP 后，你可以直接在 AI 对话框中发送以下指令：
 
-AI 助手会自动完成以下配置：
-1. 在 `agent.json` 中注册 MCP 客户端。
-2. 在 `active_skills` 中激活 1688 抓取技能，确保后续所有 1688 相关请求都会强制优先使用此工具。
-
-#### 通用 MCP 客户端 (如 Claude Desktop)
-在你的 MCP 配置文件中添加如下内容：
-```json
-{
-  "mcpServers": {
-    "1688_Scraper_MCP": {
-      "command": "D:/Docker/working/copaw/workspaces/default/1688_mcp/venv/Scripts/python.exe",
-      "args": [
-        "D:/Docker/working/copaw/workspaces/default/1688_mcp/server.py"
-      ],
-      "cwd": "D:/Docker/working/copaw/workspaces/default/1688_mcp"
-    }
-  }
-}
-```
-*(注意：请根据实际路径替换 command 和 args 中的路径。)*
-
-### 🛠️ 提供的工具
-
-1. `get_1688_product_base_info(url: str)`：提取商品标题、阶梯价格和属性。
-2. `get_1688_product_reviews(url: str)`：处理分页并从侧边抽屉提取前 20 条买家评价。
-3. `update_auth_cookie(url: str)`：开启 60 秒窗口供人工处理验证码或登录。
-4. `analyze_product_competitiveness(url: str)`：一键获取综合数据供大模型进行竞争力分析。
-
-### ⚠️ 重要提示
-- **请勿开启无头模式**：1688 的机器人检测会永久封锁标准无头请求。代码硬编码为 `co.headless(False)` 以确保稳定性。
-- **编码问题**：服务强制 `sys.stdout` 使用 `utf-8` 编码，防止在 Windows 系统通过 stdio 交互时产生乱码。
-
-### 📄 开源协议
-MIT License
-
----
-
-<a name="english"></a>
-
-## English
-
-A robust, intelligent, and anti-anti-scraping MCP (Model Context Protocol) server designed specifically for interacting with 1688.com. Built on top of `DrissionPage` and `FastMCP`, it allows Large Language Models (LLMs) like Claude to seamlessly extract product metadata, pricing, and buyer reviews from 1688 while elegantly handling complex login walls and slider captchas.
-
-### ✨ Features
-
-- **Anti-Scraping Bypass**: Uses a headed browser approach (via `DrissionPage`) rather than a detectable headless mode, massively reducing the chance of triggering 1688's strict anti-bot mechanisms.
-- **Interactive Auth Resolution**: When a slider captcha or login wall is encountered, the MCP gracefully alerts the LLM (`ERROR_AUTH_REQUIRED`), which can then trigger a 60-second interactive window for the user to manually scan a QR code or solve the slider.
-- **Cookie Persistence**: Stores user session data locally in `drission_user_data/`, meaning you only need to log in once for long-term uninterrupted scraping.
-- **Smart DOM Parsing**: Dynamically adapts to 1688's varied and complex DOM structures (including Ant Design drawers, Shadow DOMs, and dynamically loaded pagination) to reliably extract titles, tiered prices, attributes, and paginated buyer reviews.
-
-### 🚀 Installation & Setup
-
-#### CoPaw (One-Click Setup)
-If you are using **CoPaw**, simply ask the agent to "activate 1688mcp" or "help me with 1688". The AI will automatically configure itself to use this MCP server and prioritize it for all 1688-related tasks.
-
-#### Generic MCP Client (e.g., Claude Desktop)
-Add the following configuration to your MCP client's config file:
-```json
-{
-  "mcpServers": {
-    "1688_Scraper_MCP": {
-      "command": "D:/Docker/working/copaw/workspaces/default/1688_mcp/venv/Scripts/python.exe",
-      "args": [
-        "D:/Docker/working/copaw/workspaces/default/1688_mcp/server.py"
-      ],
-      "cwd": "D:/Docker/working/copaw/workspaces/default/1688_mcp"
-    }
-  }
-}
-```
-*(Note: Replace paths with your actual absolute paths.)*
+- **B端拿货**：“帮我搜索‘无缝内衣’，只要义乌的源头工厂（带牛头标），列出排名前 5 的厂家名称、成立年限和主推价格。”
+- **深度背调**：“分析一下这个链接 `[1688商品URL]` 的供应商。他是真的工厂吗？成立几年了？回头率在同行里算高吗？”
+- **算清底价**：“这个商品 `[1688商品URL]` 的阶梯价格是怎么样的？如果我买 50 件，包含运费的落地单件成本是多少？”
+- **过风控指令**：“1688又弹验证码了，帮我调起浏览器，我手动滑一下。”
