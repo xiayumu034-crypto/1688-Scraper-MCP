@@ -19,8 +19,8 @@
 
 ## Tools (via MCP)
 
-- `search_1688_products(keyword, page_num)`: 搜索商品列表，返回带有公司标签、成交额、工厂认证等详细元数据的结构化结果。
-- `get_product_detail_and_price(url)`: 获取详情页的**阶梯价格表**、起批门槛及物流快递信息。
-- `analyze_supplier_reliability(url)`: 抓取右侧边栏及工商档案，获取回头率、发货速度、超级工厂资质等深度背调数据。
-- `get_product_reviews(url, max_count)`: 获取商品评价（支持自动点击下一页进行翻页抓取）。默认最多拉取 100 条防封号，如果用户要求拉取所有，可以将 `max_count` 设置得非常大（如 1000）。
+- `search_1688_products(keyword, page_num, location_filter, only_factory, max_results)`: 搜索商品列表。通过传入 `location_filter`（如广东、义乌）和 `only_factory=True`，Python端会自动过滤无关结果，默认只返回前5个最精准数据，极大节省Token。
+- `get_product_detail_and_price(url)`: 获取详情页的阶梯价格表。已在 Python 端自动裁剪无用长尾属性（如编码、净含量等），只返回核心价格和材料。
+- `analyze_supplier_reliability(url)`: 抓取右侧边栏，获取回头率、发货速度等极简背调数据。
+- `get_product_reviews(url, max_meaningful_count)`: 获取商品高质量评价。**Python 端会自动过滤“默认好评”、“此用户未填写”以及少于5个字的灌水评价**。默认返回 20 条最具价值的买家真实反馈（长文本），长篇大论会自动截断到 150 字，保证大模型总结不溢出。
 - `update_auth_cookie(url)`: 唤起真实浏览器窗口供用户手动过风控/扫码登录（60秒）。
